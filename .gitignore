@@ -1,0 +1,9 @@
+# Cruft
+.pyc
+__pycache__
+.DS_Store
+
+# setup.py dist
+.eggs/
+build/
+dist/
