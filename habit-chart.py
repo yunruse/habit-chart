@@ -91,12 +91,13 @@ class ChartApp(rumps.App):
         self.day = self.today()
         today_entry = self.contents['log'].get(self.day, '')
         
-        habits: dict[str, str] = self.contents.get('habits', {})
-        self.today_habits = {icn: (icn in today_entry) for icn in habits.keys()}
-        
-        bonus: dict[str, str] = self.contents.get('bonus', {})
-        self.today_bonus = {
-            icon: (icon in today_entry) for icon in bonus.keys()}
+        self.contents.setdefault('habits', {})
+        habits: dict[str, str] = self.contents['habits']
+        self.today_habits = {i: (i in today_entry) for i in habits.keys()}
+
+        self.contents.setdefault('bonus', {})
+        bonus: dict[str, str] = self.contents['bonus']
+        self.today_bonus = {i: (i in today_entry) for i in bonus.keys()}
         
         self.update_title()
 
