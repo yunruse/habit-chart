@@ -1,5 +1,7 @@
 "'sticker chart'-like macOS menubar app for dopamine motivations"
 
+from typing import TypeVar
+
 from argparse import ArgumentParser
 import datetime
 import os
@@ -8,8 +10,14 @@ from pathlib import Path
 import rumps
 import yaml
 
-STAR = '⭐️'
+ALL_DONE = '⭐️'
+BONUS = '✨'
 DAY = datetime.timedelta(days=1)
+
+T = TypeVar('T')
+
+def positive_keys(d: dict[T, bool]):
+    return (key for key, check in d.items() if check)
 
 class ChartApp(rumps.App):
     path: Path
@@ -17,6 +25,7 @@ class ChartApp(rumps.App):
     contents: dict
     day: datetime.date
     today_habits: dict[str, bool]
+    today_bonus: dict[str, bool]
 
     def __init__(self, path: Path | None):
         path = path or (Path(os.environ.get('XDG_CONFIG_HOME', '~/.config')) / 'habits.yaml')
@@ -25,9 +34,12 @@ class ChartApp(rumps.App):
         self.reload()
     
     def summary(self):
-        summary = ''.join(key for key, done in self.today_habits.items() if done)
+        summary = ''.join(positive_keys(self.today_habits))
         if all(self.today_habits.values()):
-            summary += STAR
+            summary += ALL_DONE
+        bonus = list(positive_keys(self.today_bonus))
+        summary += ''.join(bonus)
+        summary += BONUS * len(bonus)
         return summary
     
     def update_title(self):
@@ -60,30 +72,46 @@ class ChartApp(rumps.App):
         self.contents.setdefault('log', {})
         
         self.day = self.today()
-        
-        habits: dict[str, str] = self.contents['habits']
         today_entry = self.contents['log'].get(self.day, '')
-        self.today_habits = {
-            icon: (icon in today_entry) for icon in habits.keys()}
-
-        N_stars = sum(
-            STAR in entry for entry in self.contents['log'].values())
-
-        def callbacker(icon):
-            return lambda c: self.check(c, icon)
+        
+        habits: dict[str, str] = self.contents.get('habits', {})
+        self.today_habits = {icn: (icn in today_entry) for icn in habits.keys()}
+        
+        bonus: dict[str, str] = self.contents.get('bonus', {})
+        self.today_bonus = {
+            icon: (icon in today_entry) for icon in bonus.keys()}
         
         self.update_title()
 
+        # Update menu
+        def callbacker(icon: str, is_bonus=False):
+            return lambda c: self.check(c, icon, is_bonus)
+
+        def load(h: dict[str, str], is_bonus=False):
+            for icon, name in h.items():
+                item = rumps.MenuItem(
+                    f'{icon} {name}',
+                    callbacker(icon, is_bonus))
+                item.state =  (self.today_bonus if is_bonus else self.today_habits)[icon]
+                self.menu.add(item)
+        
         self.menu.clear()
-        for icon, name in habits.items():
-            item = rumps.MenuItem(
-                f'{icon} {name}',
-                callbacker(icon))
-            item.state = self.today_habits[icon]
-            self.menu.add(item)
+        load(habits)
+        self.menu.add(rumps.separator)
+        if bonus:
+            load(bonus, is_bonus=True)
+            self.menu.add(rumps.separator)
+
+        N_all_done = sum(ALL_DONE in e for e in self.contents['log'].values())
+        N_bonus = sum(BONUS in e for e in self.contents['log'].values())
+        summary = f'{self.day:%d %b}'
+        if N_all_done:
+            summary += f', {ALL_DONE}×{N_all_done}'
+        if N_bonus:
+            summary += f', {BONUS}×{N_bonus}'
 
         self.menu.add(rumps.MenuItem(
-            f'Edit habits ({self.day:%d %b}, {STAR}×{N_stars})',
+            f'Edit habits ({summary})',
             lambda _: os.system(f'open {str(self.path)!r}')
         ))
         
@@ -91,9 +119,9 @@ class ChartApp(rumps.App):
             f'Quit Habit Bar',
             rumps.quit_application))
     
-    def check(self, caller: rumps.MenuItem, icon: str):
+    def check(self, caller: rumps.MenuItem, icon: str, is_bonus):
         caller.state = not caller.state
-        self.today_habits[icon] = caller.state
+        (self.today_bonus if is_bonus else self.today_habits)[icon] = caller.state
 
         self.update_title()
         self.contents['log'][self.day] = self.summary()
