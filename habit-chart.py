@@ -145,6 +145,13 @@ class ChartApp(rumps.App):
 
         with open(self.path, 'w', encoding='utf8') as f:
             yaml.dump(self.contents, f, yaml.Dumper, allow_unicode=True, sort_keys=False)
+        
+        if self.contents.get('sound', True) and caller.state:
+            if all(self.today_habits.values()) and not is_bonus:
+                os.popen('afplay sfx-all.mp3')
+            else:
+                os.popen('afplay sfx-habit.mp3')
+
 
 parser = ArgumentParser()
 parser.add_argument(

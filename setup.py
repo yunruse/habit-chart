@@ -1,7 +1,7 @@
 from setuptools import setup
 
 APP = ['habit-chart.py']
-DATA_FILES = []
+DATA_FILES = ['sfx-all.mp3', 'sfx-habit.mp3']
 OPTIONS = {
     'argv_emulation': True,
     'plist': {
