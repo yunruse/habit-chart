@@ -108,15 +108,17 @@ class ChartApp(rumps.App):
         def load(h: dict[str, str], is_bonus=False):
             for icon, name in h.items():
                 item = rumps.MenuItem(
-                    f'{icon} {name}',
+                    f'{icon}\t{name}',
                     callbacker(icon, is_bonus))
                 item.state =  (self.today_bonus if is_bonus else self.today_habits)[icon]
                 self.menu.add(item)
         
         self.menu.clear()
+        self.menu.add(rumps.MenuItem('\tDaily habits'))
         load(habits)
         self.menu.add(rumps.separator)
         if bonus:
+            self.menu.add(rumps.MenuItem('\tBonus habits'))
             load(bonus, is_bonus=True)
             self.menu.add(rumps.separator)
 
