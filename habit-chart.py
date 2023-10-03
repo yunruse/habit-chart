@@ -33,7 +33,7 @@ class ChartApp(rumps.App):
         super().__init__("Habits:", quit_button=None)
         self.reload()
     
-    def summary(self):
+    def summary_line(self):
         summary = ''.join(positive_keys(self.today_habits))
         if all(self.today_habits.values()):
             summary += ALL_DONE
@@ -42,8 +42,25 @@ class ChartApp(rumps.App):
         summary += BONUS * len(bonus)
         return summary
     
+    # Title modes
+    
+    def title_filled_unicode_stars(self):
+        def stars(h: dict[str, bool], empty: str, full: str):
+            return ''.join(full if done else empty for done in h.values())
+        
+        summary = stars(self.today_habits, '☆', '★')
+        summary += stars(self.today_bonus, '✧', '✦')
+        return summary
+
     def update_title(self):
-        self.title = 'Habits: ' + (self.summary() or f"0 / {len(self.today_habits)}")
+        mode = self.contents.get('title mode', '').lower().strip()
+
+        if mode == 'stars':
+            self.title = self.title_filled_unicode_stars()
+        elif mode == 'none':
+            self.title = 'Habits'
+        else:
+            self.title = self.summary_line() or 'Habits'
     
     @rumps.timer(10)
     def check_edit(self, _):
@@ -124,7 +141,7 @@ class ChartApp(rumps.App):
         (self.today_bonus if is_bonus else self.today_habits)[icon] = caller.state
 
         self.update_title()
-        self.contents['log'][self.day] = self.summary()
+        self.contents['log'][self.day] = self.summary_line()
 
         with open(self.path, 'w', encoding='utf8') as f:
             yaml.dump(self.contents, f, yaml.Dumper, allow_unicode=True, sort_keys=False)
