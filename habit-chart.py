@@ -135,11 +135,11 @@ class ChartApp(rumps.App):
                 self.menu.add(item)
 
         self.menu.clear()
-        self.menu.add(rumps.MenuItem('\tDaily habits'))
+        self.menu.add(rumps.MenuItem(f'{ALL_DONE}\tDaily habits'))
         load(habits)
         self.menu.add(rumps.separator)
         if bonus:
-            self.menu.add(rumps.MenuItem('\tBonus habits'))
+            self.menu.add(rumps.MenuItem(f'{BONUS}\tBonus habits'))
             load(bonus, is_bonus=True)
             self.menu.add(rumps.separator)
 
