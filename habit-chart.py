@@ -166,7 +166,9 @@ class ChartApp(rumps.App):
         # Change state
         caller.state = not caller.state
         self.habits[is_bonus][icon] = caller.state
-        self.contents['log'][self.day] = self.summary_line()
+        # Insert today's date always at the top
+        self.contents['log'] = {
+            self.day: self.summary_line(), **self.contents['log']}
 
         # Update UI
         self.update_title()
