@@ -1,5 +1,6 @@
 "'sticker chart'-like macOS menubar app for dopamine motivations"
 
+from shutil import copy
 from typing import TypeVar
 
 from argparse import ArgumentParser
@@ -21,6 +22,9 @@ def positive_keys(d: dict[T, bool]):
 
 HabitChecklist = dict[str, bool]
 
+DEFAULT_LOG_CONTENTS = Path('default.yaml')
+DEFAULT_CONFIG_LOG = Path(os.environ.get('XDG_CONFIG_HOME', '~/.config')) / 'habits.yaml'
+
 class ChartApp(rumps.App):
     path: Path
     file_last_updated: float = 0
@@ -31,8 +35,12 @@ class ChartApp(rumps.App):
     habits: tuple[HabitChecklist, HabitChecklist]
 
     def __init__(self, path: Path | None):
-        path = path or (Path(os.environ.get('XDG_CONFIG_HOME', '~/.config')) / 'habits.yaml')
-        self.path = path.expanduser()
+        if path is None:
+            path = DEFAULT_CONFIG_LOG
+        self.path = Path(path).expanduser()
+        if not self.path.is_file():
+            copy(DEFAULT_LOG_CONTENTS, self.path)
+
         super().__init__("Habits", quit_button=None)
 
     # State

@@ -1,0 +1,33 @@
+# Welcome to Habit Tracker! Please set up your habits and settings.
+
+# Each habit looks like `symbol: Name`.
+# Here are some helpful ideas.
+
+# Your daily habits. Complete them all to earn a ⭐️!
+# Try to avoid setting too many of these in one go:
+# a habit usually takes 20 days to really settle in.
+habits:
+  🌳: Go on a walk
+  🧘: Meditate
+  📖: Read a book
+
+# Bonus habits. Earn a ✨ for every one you do!
+bonus:
+  💤: Record dreams
+  🔏: Write diary
+  🏃🏻‍♀️: Go on a run
+  🧩: Solve a puzzle
+
+# What do you want showing in the menubar?
+# - none:  Simply displays the word "Habits";
+# - emoji: Show all habit emoji, ⭐️ and ✨
+# - stars: Black-and-white stars that stand out less.
+title mode: emoji
+
+# Set to `off` to disable SFX when completing habits.
+sound: on
+
+# Don't want habits resetting right at midnight? That's okay!
+# This example resets at 7am (or just delete the line!)
+# (This must be a whole number, 0 to 23)
+reset at hour: 7
